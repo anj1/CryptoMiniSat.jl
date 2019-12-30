@@ -43,7 +43,7 @@ function test_unsatisfiable()
     @assert add_clause(solver, [~Lit(0), Lit(1), Lit(2)])
 
     # Solve system with a conflicting assumption.
-    @assert l_false == solve_with_assumptions(solver, [Lit(1, false), Lit(2, true)])
+    @assert l_false == solve_with_assumptions(solver, [Lit(1), ~Lit(2)])
 
     # Verify that the conflict has been identified.
     conflict = get_conflict(solver)
