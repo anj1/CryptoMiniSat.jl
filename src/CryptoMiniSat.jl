@@ -1,6 +1,7 @@
 module CryptoMiniSat 
 
 import Base.convert 
+import Base.show 
 
 global const cmsat_lib = Sys.isunix() ? "libcryptominisat5" : "cryptominisat5"
 
@@ -51,6 +52,13 @@ struct Lit
     var::Int
     negated::Bool
 end 
+
+function Base.show(io::IO, l::Lit)
+    if l.negated 
+        print(io, "¬")
+    end 
+    show(io, l.var)
+end
 
 function convert(::Type{C_Lit}, l::Lit)
     @assert l.var < (1 << 31)
