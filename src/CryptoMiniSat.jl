@@ -1,9 +1,11 @@
 module CryptoMiniSat 
 
+import Base.convert 
+
 global const cmsat_lib = Sys.isunix() ? "libcryptominisat5" : "cryptominisat5"
 
 export SATSolver
-export C_Lit, C_lbool, Slice_Lit, Slice_lbool
+export Lit, C_lbool, Slice_Lit, Slice_lbool
 export l_true, l_false, l_undef
 export cmsat_new, cmsat_free, nvars, add_clause, add_xor_clause, new_vars, solve,
        solve_with_assumptions, get_model, get_conflict, print_stats,
@@ -37,10 +39,28 @@ const Csatsolver = Ptr{Nothing}
 
 # adapted from:
 # https://github.com/msoos/cryptominisat/blob/master/rust/src/lib.rs
+#=
 function C_Lit(var::T, negated::Bool) where {T <: Unsigned}
     @assert var < (1 << 31)
     
     return C_Lit(var << 1 | negated)
+end 
+=#
+
+struct Lit
+    var::Int
+    negated::Bool
+end 
+
+function convert(::Type{C_Lit}, l::Lit)
+    @assert l.var < (1 << 31)
+    @assert l.var >= 0 
+
+    return C_Lit(l.var << 1 | l.negated)
+end 
+
+function convert(::Type{Lit}, l::C_Lit)
+    return Lit(l.x >> 1, l.x & 0x1)
 end 
 
 mutable struct SATSolver 
@@ -72,11 +92,11 @@ function nvars(sat_solver::SATSolver)
                  sat_solver.hnd)
 end 
 
-function add_clause(sat_solver::SATSolver, clause::Vector{C_Lit})::Bool
+function add_clause(sat_solver::SATSolver, clause::Vector{Lit})::Bool
     return ccall((:cmsat_add_clause, cmsat_lib),
                  Bool,
                  (Csatsolver, Ref{C_Lit}, Csize_t),
-                 sat_solver.hnd, clause, length(clause))
+                 sat_solver.hnd, convert(Vector{C_Lit}, clause), length(clause))
 end 
 
 function add_xor_clause(sat_solver::SATSolver, vars::Vector{Unsigned}, rhs::Bool)::Bool
@@ -100,11 +120,11 @@ function solve(sat_solver::SATSolver)::C_lbool
                  sat_solver.hnd)
 end 
 
-function solve_with_assumptions(sat_solver::SATSolver, assumptions::Vector{C_Lit})::C_lbool
+function solve_with_assumptions(sat_solver::SATSolver, assumptions::Vector{Lit})::C_lbool
     return ccall((:cmsat_solve_with_assumptions, cmsat_lib),
                  C_lbool, 
                  (Csatsolver, Ref{C_Lit}, Csize_t),
-                 sat_solver.hnd, assumptions, length(assumptions))
+                 sat_solver.hnd, convert(Array{C_Lit}, assumptions), length(assumptions))
 end  
 
 function get_model(sat_solver::SATSolver)::Vector{C_lbool}
@@ -115,12 +135,13 @@ function get_model(sat_solver::SATSolver)::Vector{C_lbool}
     return unsafe_wrap(Array{C_lbool}, c_mdl.vals, c_mdl.num_vals)
 end 
 
-function get_conflict(sat_solver::SATSolver)::Vector{C_Lit}
+function get_conflict(sat_solver::SATSolver)::Vector{Lit}
     c_conflict = ccall((:cmsat_get_conflict, cmsat_lib),
                        Slice_Lit,
                        (Csatsolver,),
                        sat_solver.hnd)
-    return unsafe_wrap(Array{C_Lit}, c_conflict.vals, c_conflict.num_vals)
+    clits = unsafe_wrap(Array{C_Lit}, c_conflict.vals, c_conflict.num_vals)
+    return clits
 end 
 
 function print_stats(sat_solver::SATSolver)
