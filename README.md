@@ -4,7 +4,7 @@ CryptoMiniSat.jl
 Julia wrapper for the [CryptoMiniSat](https://github.com/msoos/cryptominisat) advanced SAT solver library.
 
 ### Scope
-This is intended to be a very thin wrapper around the library. As such, variables are represented in a numerical ordering. For example, to represent the clause 'x0', we write `Lit(0)`. To represent 'not x0', we write `~Lit(0)`. To represent 'not x1', we write `~Lit(1)`, and so on.
+This is intended to be a very thin wrapper around the library. As such, variables are represented in a numerical ordering. For example, to represent the variable 'x0', we write `Lit(0)`. To represent the negated variable 'not x0', we write `~Lit(0)`. To represent 'not x1', we write `~Lit(1)`, and so on.
 
 Clauses are lists of `Lit`s, represented a logical OR. So for example, to represent '(not x0) or (x1)', we write:
 

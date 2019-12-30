@@ -7,8 +7,8 @@ import Base.~
 global const cmsat_lib = Sys.isunix() ? "libcryptominisat5" : "cryptominisat5"
 
 export SATSolver
-export Lit, C_lbool, Slice_Lit, Slice_lbool
-export l_true, l_false, l_undef
+export Lit, LBool
+export Slice_Lit, Slice_lbool
 export cmsat_new, cmsat_free, nvars, add_clause, add_xor_clause, new_vars, solve,
        solve_with_assumptions, get_model, get_conflict, print_stats,
        set_num_threads, set_verbosity
@@ -38,6 +38,15 @@ const l_false = C_lbool(1)
 const l_undef = C_lbool(2)
 
 const Csatsolver = Ptr{Nothing}
+const LBool = Union{Bool, Nothing}
+
+function convert(::Type{LBool}, b::C_lbool)::LBool
+    if b == l_undef
+        return nothing
+    else
+        return b.x == 0
+    end 
+end 
 
 # adapted from:
 # https://github.com/msoos/cryptominisat/blob/master/rust/src/lib.rs
@@ -64,14 +73,14 @@ function Base.show(io::IO, l::Lit)
     show(io, l.var)
 end
 
-function convert(::Type{C_Lit}, l::Lit)
+function convert(::Type{C_Lit}, l::Lit)::C_Lit
     @assert l.var < (1 << 31)
     @assert l.var >= 0 
 
     return C_Lit(l.var << 1 | l.negated)
 end 
 
-function convert(::Type{Lit}, l::C_Lit)
+function convert(::Type{Lit}, l::C_Lit)::Lit
     return Lit(l.x >> 1, l.x & 0x1)
 end 
 
@@ -125,21 +134,21 @@ function new_vars(sat_solver::SATSolver, n_vars::T) where {T <: Integer}
            sat_solver.hnd, n_vars)
 end 
 
-function solve(sat_solver::SATSolver)::C_lbool
+function solve(sat_solver::SATSolver)::LBool
     return ccall((:cmsat_solve, cmsat_lib),
                  C_lbool, 
                  (Csatsolver,),
                  sat_solver.hnd)
 end 
 
-function solve_with_assumptions(sat_solver::SATSolver, assumptions::Vector{Lit})::C_lbool
+function solve_with_assumptions(sat_solver::SATSolver, assumptions::Vector{Lit})::LBool
     return ccall((:cmsat_solve_with_assumptions, cmsat_lib),
                  C_lbool, 
                  (Csatsolver, Ref{C_Lit}, Csize_t),
                  sat_solver.hnd, convert(Array{C_Lit}, assumptions), length(assumptions))
 end  
 
-function get_model(sat_solver::SATSolver)::Vector{C_lbool}
+function get_model(sat_solver::SATSolver)::Vector{LBool}
     c_mdl = ccall((:cmsat_get_model, cmsat_lib),
                   Slice_lbool,
                   (Csatsolver,),
