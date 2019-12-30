@@ -24,9 +24,7 @@ function test_satisfiable()
     # Verify solution
     mdl = get_model(solver)
 
-    @assert mdl[1] == true
-    @assert mdl[2] == false
-    @assert mdl[3] == true
+    @assert mdl == [true, false, true]
 
     # no need to free the SAT solver,
     # as it will be finalized with gc
@@ -47,7 +45,7 @@ function test_unsatisfiable()
 
     # Verify that the conflict has been identified.
     conflict = get_conflict(solver)
-    @assert conflict[1] == ~Lit(1)
+    @assert conflict == [~Lit(1)]
 end 
 
 test_satisfiable()
