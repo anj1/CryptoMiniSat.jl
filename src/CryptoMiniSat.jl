@@ -141,7 +141,7 @@ function solve(sat_solver::SATSolver)::LBool
                  sat_solver.hnd)
 end 
 
-function solve_with_assumptions(sat_solver::SATSolver, assumptions::Vector{Lit})::LBool
+function solve(sat_solver::SATSolver, assumptions::Vector{Lit})::LBool
     return ccall((:cmsat_solve_with_assumptions, cmsat_lib),
                  C_lbool, 
                  (Csatsolver, Ref{C_Lit}, Csize_t),
