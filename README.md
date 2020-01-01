@@ -1,7 +1,7 @@
 CryptoMiniSat.jl
 ====
 
-Julia wrapper for the [CryptoMiniSat](https://github.com/msoos/cryptominisat) advanced SAT solver library.
+Julia wrapper for the [CryptoMiniSat](https://github.com/msoos/cryptominisat) advanced incremental SAT solver library. Refer to the [2009 paper](https://link.springer.com/chapter/10.1007%2F978-3-642-02777-2_24) by Mate Soos et. al.
 
 ### Scope
 This is intended to be a very thin wrapper around the library. As such, variables are represented in a numerical ordering. For example, to represent the variable 'x0', we write `Lit(0)`. To represent the negated variable 'not x0', we write `~Lit(0)`. To represent 'not x1', we write `~Lit(1)`, and so on.
@@ -33,11 +33,10 @@ add_clause(solver, [Lit(0)])
 add_clause(solver, [~Lit(1)])
 add_clause(solver, [~Lit(0), Lit(1), Lit(2)])
 
-# Solve system (this should return true)
-solve(solver) 
-
-# Verify solution
-mdl = get_model(solver)
+# Solve system.
+# This returns true if the solve was successful,
+# plus a solution ('model')
+sat, mdl = solve(solver) 
 
 @show mdl
 ```

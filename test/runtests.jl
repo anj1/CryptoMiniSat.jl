@@ -1,5 +1,17 @@
 using CryptoMiniSat
 
+#=
+Basic sanity check that we can interface properly
+with the library.
+=#
+function test_nvars()
+    solver = SATSolver()
+
+    new_vars(solver, 7)
+
+    @assert nvars(solver) == 7
+end 
+
 function test_satisfiable()
     # Example taken from:
     # https://github.com/msoos/cryptominisat#rust-binding
@@ -67,6 +79,7 @@ function test_xor_clause()
     @assert add_clause(solver, [~Lit(0), Lit(1), Lit(2)]) == false
 end 
 
+test_nvars()
 test_satisfiable()
 test_unsatisfiable()
 test_xor_clause()
