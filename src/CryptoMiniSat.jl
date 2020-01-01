@@ -119,11 +119,11 @@ function add_clause(sat_solver::SATSolver, clause::Vector{Lit})::Bool
                  sat_solver.hnd, convert(Vector{C_Lit}, clause), length(clause))
 end 
 
-function add_xor_clause(sat_solver::SATSolver, vars::Vector{Unsigned}, rhs::Bool)::Bool
+function add_xor_clause(sat_solver::SATSolver, vars::Vector{T}, rhs::Bool)::Bool where {T <: Unsigned}
     return ccall((:cmsat_add_xor_clause, cmsat_lib),
           Bool,
-          (Csatsolver, Ref{Cuint}, Bool),
-          sat_solver.hnd, vars, rhs)
+          (Csatsolver, Ref{Cuint}, Csize_t, Bool),
+          sat_solver.hnd, convert(Vector{Cuint}, vars), length(vars), rhs)
 end 
 
 function new_vars(sat_solver::SATSolver, n_vars::T) where {T <: Integer}

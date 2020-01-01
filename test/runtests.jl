@@ -39,11 +39,34 @@ function test_unsatisfiable()
     # Solve system with a conflicting assumption.
     sat, mdl = solve(solver, [Lit(1), ~Lit(2)])
     @assert sat == false 
-    
+
     # Verify that the conflict has been identified.
     conflict = get_conflict(solver)
     @assert conflict == [~Lit(1)]
 end 
 
+function test_xor_clause()
+    solver = SATSolver()
+
+    new_vars(solver, 3)
+
+    # Create clauses 
+    @assert add_clause(solver, [Lit(0)])
+    @assert add_xor_clause(solver, Unsigned[0, 1], true)
+    @assert add_xor_clause(solver, Unsigned[0, 1, 2], true)
+
+    # Solve system with a conflicting assumption.
+    sat, mdl = solve(solver)
+    @assert sat == true 
+    
+    # Verify that the solution has been identified.
+    @assert sat == true
+    @assert mdl == [true, false, false]
+
+    # Verify that this is in fact the only solution 
+    @assert add_clause(solver, [~Lit(0), Lit(1), Lit(2)]) == false
+end 
+
 test_satisfiable()
 test_unsatisfiable()
+test_xor_clause()
