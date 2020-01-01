@@ -10,8 +10,7 @@ export SATSolver
 export Lit, LBool
 export Slice_Lit, Slice_lbool
 export cmsat_new, cmsat_free, nvars, add_clause, add_xor_clause, new_vars, solve,
-       solve_with_assumptions, get_model, get_conflict, print_stats,
-       set_num_threads, set_verbosity
+       get_model, get_conflict, print_stats, set_num_threads, set_verbosity
     
 # structs taken from:
 # https://github.com/msoos/cryptominisat/blob/master/src/cryptominisat_c.h.in
