@@ -134,18 +134,20 @@ function new_vars(sat_solver::SATSolver, n_vars::T) where {T <: Integer}
            sat_solver.hnd, n_vars)
 end 
 
-function solve(sat_solver::SATSolver)::LBool
-    return ccall((:cmsat_solve, cmsat_lib),
+function solve(sat_solver::SATSolver)::Tuple{LBool,Vector{LBool}}
+    sat = ccall((:cmsat_solve, cmsat_lib),
                  C_lbool, 
                  (Csatsolver,),
                  sat_solver.hnd)
+    return sat, get_model(sat_solver)
 end 
 
-function solve(sat_solver::SATSolver, assumptions::Vector{Lit})::LBool
-    return ccall((:cmsat_solve_with_assumptions, cmsat_lib),
+function solve(sat_solver::SATSolver, assumptions::Vector{Lit})::Tuple{LBool,Vector{LBool}}
+    sat = ccall((:cmsat_solve_with_assumptions, cmsat_lib),
                  C_lbool, 
                  (Csatsolver, Ref{C_Lit}, Csize_t),
                  sat_solver.hnd, convert(Array{C_Lit}, assumptions), length(assumptions))
+    return sat, get_model(sat_solver)
 end  
 
 function get_model(sat_solver::SATSolver)::Vector{LBool}

@@ -17,12 +17,9 @@ function test_satisfiable()
     @assert add_clause(solver, [~Lit(1)])
     @assert add_clause(solver, [~Lit(0), Lit(1), Lit(2)])
 
-    # Solve system
-    @assert solve(solver) == true
-
-    # Verify solution
-    mdl = get_model(solver)
-
+    # Solve system and verify
+    sat, mdl = solve(solver)
+    @assert sat == true
     @assert mdl == [true, false, true]
 
     # no need to free the SAT solver,
@@ -40,8 +37,9 @@ function test_unsatisfiable()
     @assert add_clause(solver, [~Lit(0), Lit(1), Lit(2)])
 
     # Solve system with a conflicting assumption.
-    @assert false == solve(solver, [Lit(1), ~Lit(2)])
-
+    sat, mdl = solve(solver, [Lit(1), ~Lit(2)])
+    @assert sat == false 
+    
     # Verify that the conflict has been identified.
     conflict = get_conflict(solver)
     @assert conflict == [~Lit(1)]
